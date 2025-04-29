@@ -16,23 +16,24 @@ import SwiftUI
 
 
 
-var currentGameTime = 0.0
+var currentGameTime = Float(0.0)
 
-
+let FPSLabel = SKLabelNode(fontNamed: "Helvetica")
+var fps = 0
 class Gamescene: SKScene{
     
     // define some variable because  why not
     var move = CGVector(dx: 0.0, dy: 0.0)
-    var moveDZ = 0.0
+    var moveDZ = Float16(0.0)
     var moveView = CGVector(dx: 0.0, dy: 0.0)
     var lastTouch = CGPoint (x: 0, y:0)
-    var lastTouchTime = 0.0
+    var lastTouchTime = Float(0.0)
     var lastTouch2 = CGPoint (x: 0, y:0)
-    var lastTouchTime2 = 0.0
+    var lastTouchTime2 = Float(0.0)
     
     
-    var playerAngle = 0.0
-    var playerAngleZ = 0.0
+    var playerAngle = Float16(0.0)
+    var playerAngleZ = Float16(0.0)
     
     //map define stuff
     
@@ -231,14 +232,20 @@ class Gamescene: SKScene{
         print ("Debug")
         self.addChild(rayCastNode)
         
+        FPSLabel.text = "FPS: \(fps)"
+        FPSLabel.fontSize = 35
+        FPSLabel.position = CGPoint(x: 100, y: 320)
+        FPSLabel.fontColor = .blue
+        addChild(FPSLabel)
+        
         
     }
     
     
     
     override func update(_ currentTime: TimeInterval){
-        
-        currentGameTime = currentTime
+        fps = Int(1/(currentTime - Double(currentGameTime)))
+        currentGameTime = Float(currentTime)
         //self.removeAllChildren()
         rayCastNode.removeAllChildren()
         draw2dMap()
@@ -255,6 +262,8 @@ class Gamescene: SKScene{
         
         draw3dMap(points: points, distance: distances)
         rayCastNode.addChild(player)
+        
+        FPSLabel.text = String(fps)
         
         
     }
@@ -299,7 +308,7 @@ class Gamescene: SKScene{
     
     }
     */
-    func draw3dMap(points: [[(Int, Int, Int)?]], distance: [[Float]]) {
+    func draw3dMap(points: [[(Int, Int, Int)?]], distance: [[Float16]]) {
         
         
         for (y, yLis) in points.enumerated() {
@@ -312,7 +321,7 @@ class Gamescene: SKScene{
                 var dis = CGFloat(distance[y][x])
                 
                 if dis > 1 {
-                    dis = pow((dis - 1), 1.5) / 20 + 1
+                    dis = pow(Double(dis - 1), 1.5) / 20 + 1
                     dis = sqrt(dis-1) / 2 + 1
                 } else {
                     dis = 1
@@ -353,11 +362,11 @@ class Gamescene: SKScene{
             if location.x > self.size.width/2{
                 let newLocation = CGPoint(x: location.x, y: location.y)
                 lastTouch = newLocation
-                lastTouchTime = currentGameTime
+                lastTouchTime = Float(currentGameTime)
             } else {
                 let newLocation = CGPoint(x: location.x, y: location.y)
                 lastTouch2 = newLocation
-                lastTouchTime2 = currentGameTime
+                lastTouchTime2 = Float(currentGameTime)
             }
         }
         
@@ -381,9 +390,9 @@ class Gamescene: SKScene{
                 
                 moveView = CGVector(dx:(lastTouch.x - newLocation.x), dy:lastTouch.y - newLocation.y)
                 
-                playerAngle += moveView.dx / -40
+                playerAngle += Float16(moveView.dx / -40)
                 
-                playerAngleZ += moveView.dy / 40
+                playerAngleZ += Float16(moveView.dy / 40)
                 
                 
                 playerAngle = if playerAngle < 0 {playerAngle + 6.28} else if playerAngle > 6.28 {playerAngle - 6.28} else {playerAngle}
@@ -477,6 +486,7 @@ struct gameScene_Previews: PreviewProvider {
         ContentView()
     }
 }
+
 
 
 
