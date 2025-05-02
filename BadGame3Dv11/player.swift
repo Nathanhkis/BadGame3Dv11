@@ -327,7 +327,6 @@ func checkPointsY (map: [[[(Int, Int, Int)?]]], startPos: [Float16], distance: F
     }
     
     
-    var dof = 0
     
     
     var aTan = Float16(-1/slope)
@@ -374,7 +373,7 @@ func checkPointsY (map: [[[(Int, Int, Int)?]]], startPos: [Float16], distance: F
     var mx = Int()
     var my = Int()
     var mz = Int()
-    while (dof < 200) {
+    while true {
         mx = Int(rx) //idk if /64 or * 64
         my = Int(ry)
         mz = Int(rz)
@@ -400,7 +399,6 @@ func checkPointsY (map: [[[(Int, Int, Int)?]]], startPos: [Float16], distance: F
         rx += xo
         ry += Float16(yo)
         rz += Float(zo)
-        dof += 1
         
         
     }
@@ -416,7 +414,7 @@ func checkPointsY (map: [[[(Int, Int, Int)?]]], startPos: [Float16], distance: F
 
 
 
-func checkPointsZ (map: [[[(Int, Int, Int)?]]], startPos: [Float16], angle: Float16, angleZ: Float16, dir: Bool) -> (Bool, CGPoint, Float16, (Int, Int, Int)?) {
+func checkPointsZ (map: [[[(Int, Int, Int)?]]], startPos: [Float16], angle: Float16, slopeZ: Float16, angleZ: Float16, dir: Bool) -> (Bool, CGPoint, Float16, (Int, Int, Int)?) {
     // Handle cases where angleZ is parallel to the ground
     if angleZ == 0 || angleZ == 180 {
         return (false, CGPoint(x:0, y:0), 10000.0, nil)
@@ -444,7 +442,7 @@ func checkPointsZ (map: [[[(Int, Int, Int)?]]], startPos: [Float16], angle: Floa
     let angleRadian = Float16(angle * 3.14 / 180)
     
     //let slopeXY = Float16(tan(angleRadian))
-    let slopeZ = Float16(tan(Double(angleZ) * 3.14 / 180.0))
+    //let slopeZ = Float16(tan(Double(angleZ) * 3.14 / 180.0))
     
     // Calculate how much X and Y change per Z unit
     let stepScale = Float16(disZ / abs(slopeZ))
@@ -516,7 +514,7 @@ func singleRayMath (map: [[[(Int, Int, Int)?]]], angle: Float16, slope: Float16,
     //var points = [CGPoint (x:0, y:0)]
     
     let (boolLR, pointLR, pointDisLR, colorLR) = checkPointsX(map: map, startPos: playerPosInGame, distance: 0.5, slope: slope, co: slopeZ, dir: dir)
-    let (boolFB, pointFB, pointDisFB, colorFB) = checkPointsZ(map: map, startPos: playerPosInGame, angle: angle, angleZ: angleZ, dir: dir)
+    let (boolFB, pointFB, pointDisFB, colorFB) = checkPointsZ(map: map, startPos: playerPosInGame, angle: angle, slopeZ: slopeZ, angleZ: angleZ, dir: dir)
     //var boolLR = false
         //points.append(point)
     
@@ -566,33 +564,36 @@ func rayCastMath (map:[[[(Int, Int, Int)?]]]) -> ([[(Int, Int, Int)?]], [CGPoint
         //temp = 0
         var tempAngleZ = playerAngleZ + Float16(z)
         var upsideDown = false
-        if (tempAngleZ > 90 && tempAngleZ < 270) || (tempAngleZ < -90 && tempAngleZ > -270) {
+        
+        /*if (tempAngleZ > 90 && tempAngleZ < 270) || (tempAngleZ < -90 && tempAngleZ > -270) {
             
-            tempAngleZ = tempAngleZ > 0 ? 180 - tempAngleZ : 0 - tempAngleZ
-            //upsideDown = true
-        }
+            
+            upsideDown = true
+            tempAngleZ = 180 - tempAngleZ
+        }*/
         for i in stride(from: 30, through: -30, by: -1) {
             var rayAngle = Float16(playerAngle + Float16(i))
             
             
             
             //rayAngle = (playerAngle + Float16(i))
+            
+            /*
             if upsideDown {
+                //rayAngle = 180 + rayAngle
                 rayAngle += 180
-                
-                
-            }
+            }*/
             
             rayAngle = rayAngle.truncatingRemainder(dividingBy: 360)
             
             var temp = tan(Double(tempAngleZ*3.14/180.0))
             temp *= cos (Double(i)*3.14/180)
-            temp = atan(temp)*180/3.14
+            
             
            
             
             
-            let (ans, ans2, disAns) = singleRayMath(map: map, angle: rayAngle, slope: Float16(tan(Double(rayAngle) * 3.14 / 180)), angleZ: Float16(temp), slopeZ: Float16(tan(temp*3.14/180)), playerPosInGame: playerGamePosition)
+            let (ans, ans2, disAns) = singleRayMath(map: map, angle: rayAngle, slope: Float16(tan(Double(rayAngle) * 3.14 / 180)), angleZ: Float16(atan(temp)*180/3.14), slopeZ: Float16(temp), playerPosInGame: playerGamePosition)
             colors[colors.count-1].append(ans)
             distances[distances.count-1].append(disAns)
             
@@ -611,6 +612,7 @@ func rayCastMath (map:[[[(Int, Int, Int)?]]]) -> ([[(Int, Int, Int)?]], [CGPoint
 #Preview {
     ContentView()
 }
+
 
 
 

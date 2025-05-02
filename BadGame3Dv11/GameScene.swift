@@ -394,10 +394,11 @@ class Gamescene: SKScene{
                 
                 playerAngleZ += Float16(moveView.dy / 40)
                 
+                if playerAngleZ < 0 {
+                    playerAngleZ += 6.28
+                }
                 
-                playerAngle = if playerAngle < 0 {playerAngle + 6.28} else if playerAngle > 6.28 {playerAngle - 6.28} else {playerAngle}
-                
-                playerAngleZ = if playerAngleZ < -3.14 {-3.14} else if playerAngleZ > 3.14 {3.14} else {playerAngleZ}
+                playerAngleZ = playerAngleZ.truncatingRemainder(dividingBy: 6.28)
                 
                 
                 
